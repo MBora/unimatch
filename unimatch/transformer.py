@@ -4,7 +4,7 @@ import torch.nn as nn
 from .attention import (single_head_full_attention, single_head_split_window_attention,
                         single_head_full_attention_1d, single_head_split_window_attention_1d)
 from .utils import generate_shift_window_attn_mask, generate_shift_window_attn_mask_1d
-
+from .vim import VisionMamba
 
 class TransformerLayer(nn.Module):
     def __init__(self,
@@ -212,6 +212,10 @@ class FeatureTransformer(nn.Module):
         self.d_model = d_model
         self.nhead = nhead
 
+        self.vision_mamba = VisionMamba(
+            embed_dim = d_model,
+            depth = num_layers,
+        )
         self.layers = nn.ModuleList([
             TransformerBlock(d_model=d_model,
                              nhead=nhead,

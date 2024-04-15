@@ -1,0 +1,605 @@
+Namespace(checkpoint_dir='tmp', stage='sceneflow', val_dataset=['kitti15'], max_disp=400, img_height=384, img_width=768, padding_factor=16, batch_size=16, num_workers=8, lr=0.001, weight_decay=0.0001, seed=326, resume='pretrained/gmstereo-scale2-regrefine3-resumeflowthings-kitti15-04487ebf.pth', strict_resume=False, no_resume_optimizer=True, resume_exclude_upsampler=False, task='stereo', num_scales=1, feature_channels=128, upsample_factor=8, num_head=1, ffn_dim_expansion=4, num_transformer_layers=6, reg_refine=False, attn_type='self_swin2d_cross_1d', attn_splits_list=[2], corr_radius_list=[-1], prop_radius_list=[-1], num_reg_refine=1, eval=False, inference_size=None, count_time=False, save_vis_disp=False, save_dir=None, middlebury_resolution='F', submission=False, eth_submission_mode='train', middlebury_submission_mode='training', output_path='output', summary_freq=1000, save_ckpt_freq=1000, val_freq=10000, save_latest_ckpt_freq=1000, num_steps=100000, distributed=False, local_rank=0, launcher='none', gpu_ids=0, inference_dir=None, inference_dir_left=None, inference_dir_right=None, pred_bidir_disp=False, pred_right_disp=False, save_pfm_disp=False, debug=False)
+UniMatch(
+  (backbone): CNNEncoder(
+    (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+    (relu1): ReLU(inplace=True)
+    (layer1): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (layer2): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(64, 96, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (conv2): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm3): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (downsample): Sequential(
+          (0): Conv2d(64, 96, kernel_size=(1, 1), stride=(2, 2))
+          (1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        )
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (layer3): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(96, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm3): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (downsample): Sequential(
+          (0): Conv2d(96, 128, kernel_size=(1, 1), stride=(2, 2))
+          (1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        )
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (transformer): FeatureTransformer(
+    (vision_mamba): VisionMamba(
+      (patch_embed): PatchEmbed(
+        (proj): Conv2d(3, 128, kernel_size=(16, 16), stride=(16, 16))
+        (norm): Identity()
+      )
+      (head): Linear(in_features=128, out_features=1000, bias=True)
+      (drop_path): DropPath(drop_prob=0.100)
+      (layers): ModuleList(
+        (0-1): 2 x Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): Identity()
+        )
+        (2): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.020)
+        )
+        (3): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.040)
+        )
+        (4): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.060)
+        )
+        (5): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.080)
+        )
+      )
+      (norm_f): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+    )
+    (layers): ModuleList(
+      (0-5): 6 x TransformerBlock(
+        (self_attn): TransformerLayer(
+          (q_proj): Linear(in_features=128, out_features=128, bias=False)
+          (k_proj): Linear(in_features=128, out_features=128, bias=False)
+          (v_proj): Linear(in_features=128, out_features=128, bias=False)
+          (merge): Linear(in_features=128, out_features=128, bias=False)
+          (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+        )
+        (cross_attn_ffn): TransformerLayer(
+          (q_proj): Linear(in_features=128, out_features=128, bias=False)
+          (k_proj): Linear(in_features=128, out_features=128, bias=False)
+          (v_proj): Linear(in_features=128, out_features=128, bias=False)
+          (merge): Linear(in_features=128, out_features=128, bias=False)
+          (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (mlp): Sequential(
+            (0): Linear(in_features=256, out_features=1024, bias=False)
+            (1): GELU(approximate='none')
+            (2): Linear(in_features=1024, out_features=128, bias=False)
+          )
+          (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+    )
+  )
+  (feature_flow_attn): SelfAttnPropagation(
+    (q_proj): Linear(in_features=128, out_features=128, bias=True)
+    (k_proj): Linear(in_features=128, out_features=128, bias=True)
+  )
+  (upsampler): Sequential(
+    (0): Conv2d(130, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): ReLU(inplace=True)
+    (2): Conv2d(256, 576, kernel_size=(1, 1), stride=(1, 1))
+  )
+)
+Use 4 GPUs
+=> Number of trainable parameters: 5717448
+=> Load checkpoint: pretrained/gmstereo-scale2-regrefine3-resumeflowthings-kitti15-04487ebf.pth
+start_epoch: 0, start_step: 0
+=> 0 training samples found in the training set
+Traceback (most recent call last):
+  File "/home/beta/Workbenches/saurabh/unimatch/main_stereo.py", line 625, in <module>
+    main(args)
+  File "/home/beta/Workbenches/saurabh/unimatch/main_stereo.py", line 376, in main
+    train_loader = DataLoader(dataset=train_data, batch_size=args.batch_size, shuffle=train_sampler is None,
+  File "/home/beta/.conda/envs/bvim/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 349, in __init__
+    sampler = RandomSampler(dataset, generator=generator)  # type: ignore[arg-type]
+  File "/home/beta/.conda/envs/bvim/lib/python3.9/site-packages/torch/utils/data/sampler.py", line 140, in __init__
+    raise ValueError(f"num_samples should be a positive integer value, but got num_samples={self.num_samples}")
+ValueError: num_samples should be a positive integer value, but got num_samples=0
+Namespace(checkpoint_dir='tmp', stage='sceneflow', val_dataset=['kitti15'], max_disp=400, img_height=384, img_width=768, padding_factor=16, batch_size=16, num_workers=8, lr=0.001, weight_decay=0.0001, seed=326, resume=None, strict_resume=False, no_resume_optimizer=True, resume_exclude_upsampler=False, task='stereo', num_scales=1, feature_channels=128, upsample_factor=8, num_head=1, ffn_dim_expansion=4, num_transformer_layers=6, reg_refine=False, attn_type='self_swin2d_cross_1d', attn_splits_list=[2], corr_radius_list=[-1], prop_radius_list=[-1], num_reg_refine=1, eval=False, inference_size=None, count_time=False, save_vis_disp=False, save_dir=None, middlebury_resolution='F', submission=False, eth_submission_mode='train', middlebury_submission_mode='training', output_path='output', summary_freq=1000, save_ckpt_freq=1000, val_freq=10000, save_latest_ckpt_freq=1000, num_steps=100000, distributed=False, local_rank=0, launcher='none', gpu_ids=0, inference_dir=None, inference_dir_left=None, inference_dir_right=None, pred_bidir_disp=False, pred_right_disp=False, save_pfm_disp=False, debug=False)
+UniMatch(
+  (backbone): CNNEncoder(
+    (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+    (relu1): ReLU(inplace=True)
+    (layer1): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (layer2): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(64, 96, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (conv2): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm3): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (downsample): Sequential(
+          (0): Conv2d(64, 96, kernel_size=(1, 1), stride=(2, 2))
+          (1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        )
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (layer3): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(96, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm3): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (downsample): Sequential(
+          (0): Conv2d(96, 128, kernel_size=(1, 1), stride=(2, 2))
+          (1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        )
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (transformer): FeatureTransformer(
+    (vision_mamba): VisionMamba(
+      (patch_embed): PatchEmbed(
+        (proj): Conv2d(3, 128, kernel_size=(16, 16), stride=(16, 16))
+        (norm): Identity()
+      )
+      (head): Linear(in_features=128, out_features=1000, bias=True)
+      (drop_path): DropPath(drop_prob=0.100)
+      (layers): ModuleList(
+        (0-1): 2 x Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): Identity()
+        )
+        (2): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.020)
+        )
+        (3): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.040)
+        )
+        (4): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.060)
+        )
+        (5): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.080)
+        )
+      )
+      (norm_f): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+    )
+    (layers): ModuleList(
+      (0-5): 6 x TransformerBlock(
+        (self_attn): TransformerLayer(
+          (q_proj): Linear(in_features=128, out_features=128, bias=False)
+          (k_proj): Linear(in_features=128, out_features=128, bias=False)
+          (v_proj): Linear(in_features=128, out_features=128, bias=False)
+          (merge): Linear(in_features=128, out_features=128, bias=False)
+          (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+        )
+        (cross_attn_ffn): TransformerLayer(
+          (q_proj): Linear(in_features=128, out_features=128, bias=False)
+          (k_proj): Linear(in_features=128, out_features=128, bias=False)
+          (v_proj): Linear(in_features=128, out_features=128, bias=False)
+          (merge): Linear(in_features=128, out_features=128, bias=False)
+          (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (mlp): Sequential(
+            (0): Linear(in_features=256, out_features=1024, bias=False)
+            (1): GELU(approximate='none')
+            (2): Linear(in_features=1024, out_features=128, bias=False)
+          )
+          (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+    )
+  )
+  (feature_flow_attn): SelfAttnPropagation(
+    (q_proj): Linear(in_features=128, out_features=128, bias=True)
+    (k_proj): Linear(in_features=128, out_features=128, bias=True)
+  )
+  (upsampler): Sequential(
+    (0): Conv2d(130, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): ReLU(inplace=True)
+    (2): Conv2d(256, 576, kernel_size=(1, 1), stride=(1, 1))
+  )
+)
+Use 4 GPUs
+=> Number of trainable parameters: 5717448
+=> 0 training samples found in the training set
+Traceback (most recent call last):
+  File "/home/beta/Workbenches/saurabh/unimatch/main_stereo.py", line 625, in <module>
+    main(args)
+  File "/home/beta/Workbenches/saurabh/unimatch/main_stereo.py", line 376, in main
+    train_loader = DataLoader(dataset=train_data, batch_size=args.batch_size, shuffle=train_sampler is None,
+  File "/home/beta/.conda/envs/bvim/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 349, in __init__
+    sampler = RandomSampler(dataset, generator=generator)  # type: ignore[arg-type]
+  File "/home/beta/.conda/envs/bvim/lib/python3.9/site-packages/torch/utils/data/sampler.py", line 140, in __init__
+    raise ValueError(f"num_samples should be a positive integer value, but got num_samples={self.num_samples}")
+ValueError: num_samples should be a positive integer value, but got num_samples=0
+Namespace(checkpoint_dir='tmp', stage='sceneflow', val_dataset=['sintel'], max_disp=400, img_height=384, img_width=768, padding_factor=16, batch_size=16, num_workers=8, lr=0.001, weight_decay=0.0001, seed=326, resume=None, strict_resume=False, no_resume_optimizer=True, resume_exclude_upsampler=False, task='stereo', num_scales=1, feature_channels=128, upsample_factor=8, num_head=1, ffn_dim_expansion=4, num_transformer_layers=6, reg_refine=False, attn_type='self_swin2d_cross_1d', attn_splits_list=[2], corr_radius_list=[-1], prop_radius_list=[-1], num_reg_refine=1, eval=False, inference_size=None, count_time=False, save_vis_disp=False, save_dir=None, middlebury_resolution='F', submission=False, eth_submission_mode='train', middlebury_submission_mode='training', output_path='output', summary_freq=1000, save_ckpt_freq=1000, val_freq=10000, save_latest_ckpt_freq=1000, num_steps=100000, distributed=False, local_rank=0, launcher='none', gpu_ids=0, inference_dir=None, inference_dir_left=None, inference_dir_right=None, pred_bidir_disp=False, pred_right_disp=False, save_pfm_disp=False, debug=False)
+UniMatch(
+  (backbone): CNNEncoder(
+    (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+    (relu1): ReLU(inplace=True)
+    (layer1): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(64, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (layer2): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(64, 96, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (conv2): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm3): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (downsample): Sequential(
+          (0): Conv2d(64, 96, kernel_size=(1, 1), stride=(2, 2))
+          (1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        )
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(96, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (layer3): Sequential(
+      (0): ResidualBlock(
+        (conv1): Conv2d(96, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm3): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (downsample): Sequential(
+          (0): Conv2d(96, 128, kernel_size=(1, 1), stride=(2, 2))
+          (1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        )
+      )
+      (1): ResidualBlock(
+        (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (relu): ReLU(inplace=True)
+        (norm1): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+        (norm2): InstanceNorm2d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=False)
+      )
+    )
+    (conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (transformer): FeatureTransformer(
+    (vision_mamba): VisionMamba(
+      (patch_embed): PatchEmbed(
+        (proj): Conv2d(3, 128, kernel_size=(16, 16), stride=(16, 16))
+        (norm): Identity()
+      )
+      (head): Linear(in_features=128, out_features=1000, bias=True)
+      (drop_path): DropPath(drop_prob=0.100)
+      (layers): ModuleList(
+        (0-1): 2 x Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): Identity()
+        )
+        (2): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.020)
+        )
+        (3): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.040)
+        )
+        (4): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.060)
+        )
+        (5): Block(
+          (mixer): Mamba(
+            (in_proj): Linear(in_features=128, out_features=512, bias=False)
+            (conv1d): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (act): SiLU()
+            (x_proj): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj): Linear(in_features=8, out_features=256, bias=True)
+            (conv1d_b): Conv1d(256, 256, kernel_size=(4,), stride=(1,), padding=(3,), groups=256)
+            (x_proj_b): Linear(in_features=256, out_features=40, bias=False)
+            (dt_proj_b): Linear(in_features=8, out_features=256, bias=True)
+            (out_proj): Linear(in_features=256, out_features=128, bias=False)
+          )
+          (norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (drop_path): DropPath(drop_prob=0.080)
+        )
+      )
+      (norm_f): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+    )
+    (layers): ModuleList(
+      (0-5): 6 x TransformerBlock(
+        (self_attn): TransformerLayer(
+          (q_proj): Linear(in_features=128, out_features=128, bias=False)
+          (k_proj): Linear(in_features=128, out_features=128, bias=False)
+          (v_proj): Linear(in_features=128, out_features=128, bias=False)
+          (merge): Linear(in_features=128, out_features=128, bias=False)
+          (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+        )
+        (cross_attn_ffn): TransformerLayer(
+          (q_proj): Linear(in_features=128, out_features=128, bias=False)
+          (k_proj): Linear(in_features=128, out_features=128, bias=False)
+          (v_proj): Linear(in_features=128, out_features=128, bias=False)
+          (merge): Linear(in_features=128, out_features=128, bias=False)
+          (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+          (mlp): Sequential(
+            (0): Linear(in_features=256, out_features=1024, bias=False)
+            (1): GELU(approximate='none')
+            (2): Linear(in_features=1024, out_features=128, bias=False)
+          )
+          (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+    )
+  )
+  (feature_flow_attn): SelfAttnPropagation(
+    (q_proj): Linear(in_features=128, out_features=128, bias=True)
+    (k_proj): Linear(in_features=128, out_features=128, bias=True)
+  )
+  (upsampler): Sequential(
+    (0): Conv2d(130, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): ReLU(inplace=True)
+    (2): Conv2d(256, 576, kernel_size=(1, 1), stride=(1, 1))
+  )
+)
+Use 4 GPUs
+=> Number of trainable parameters: 5717448
+=> 0 training samples found in the training set
+Traceback (most recent call last):
+  File "/home/beta/Workbenches/saurabh/unimatch/main_stereo.py", line 625, in <module>
+    main(args)
+  File "/home/beta/Workbenches/saurabh/unimatch/main_stereo.py", line 376, in main
+    train_loader = DataLoader(dataset=train_data, batch_size=args.batch_size, shuffle=train_sampler is None,
+  File "/home/beta/.conda/envs/bvim/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 349, in __init__
+    sampler = RandomSampler(dataset, generator=generator)  # type: ignore[arg-type]
+  File "/home/beta/.conda/envs/bvim/lib/python3.9/site-packages/torch/utils/data/sampler.py", line 140, in __init__
+    raise ValueError(f"num_samples should be a positive integer value, but got num_samples={self.num_samples}")
+ValueError: num_samples should be a positive integer value, but got num_samples=0

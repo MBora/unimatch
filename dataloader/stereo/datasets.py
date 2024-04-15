@@ -157,7 +157,7 @@ class Driving(StereoDataset):
 
 class KITTI15(StereoDataset):
     def __init__(self,
-                 data_dir='datasets/KITTI/stereo/kitti_2015',
+                 data_dir='/home/beta/Workbenches/saurabh/unimatch/datasets/KITTI/stereo/kitti_2015',
                  mode='training',
                  transform=None,
                  save_filename=False,
@@ -460,7 +460,7 @@ class Middlebury2014(StereoDataset):
 
 class Middlebury2021(StereoDataset):
     def __init__(self,
-                 data_dir='datasets/Middlebury/2021/data',
+                 data_dir='/home/beta/Workbenches/saurabh/unimatch/datasets/Middlebury/2021/data',
                  transform=None,
                  save_filename=False,
                  ):
@@ -831,7 +831,7 @@ def build_dataset(args):
         # middlebury 2015: 60
         mb2005 = Middlebury20052006(transform=train_transform)
         # middlebury 2016: 210
-        mb2006 = Middlebury20052006(data_dir='datasets/Middlebury/2006',
+        mb2006 = Middlebury20052006(data_dir='/home/beta/Workbenches/saurabh/unimatch/datasets/Middlebury/2021/data',
                                     transform=train_transform
                                     )
 

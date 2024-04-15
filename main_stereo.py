@@ -14,7 +14,7 @@ from utils.dist_utils import get_dist_info, init_dist, setup_for_distributed
 from utils.visualization import disp_error_img, save_images
 from loss.stereo_metric import d1_metric
 from evaluate_stereo import (validate_things, validate_kitti15, validate_eth3d,
-                             validate_middlebury, create_kitti_submission,
+                             validate_middlebury,validate_sintel, create_kitti_submission,
                              create_eth3d_submission,
                              create_middlebury_submission,
                              inference_stereo,
@@ -279,6 +279,19 @@ def main(args):
 
             if args.local_rank == 0:
                 val_results.update(results_dict)
+        if 'sintel' in args.val_dataset:
+            results_dict = validate_sintel(model_without_ddp,
+                                           max_disp=args.max_disp,
+                                           padding_factor=args.padding_factor,
+                                           inference_size=args.inference_size,
+                                           attn_type=args.attn_type,
+                                           attn_splits_list=args.attn_splits_list,
+                                           corr_radius_list=args.corr_radius_list,
+                                           prop_radius_list=args.prop_radius_list,
+                                           num_reg_refine=args.num_reg_refine,
+                                           )
+            if args.local_rank == 0:
+                val_results.update(results_dict)
 
         if 'kitti15' in args.val_dataset or 'kitti12' in args.val_dataset:
             results_dict = validate_kitti15(model_without_ddp,
@@ -401,8 +414,8 @@ def main(args):
 
             if not mask.any():
                 continue
-
-            pred_disps = model(left, right,
+            
+            pred_disps = model(img0=left, img1=right,
                                attn_type=args.attn_type,
                                attn_splits_list=args.attn_splits_list,
                                corr_radius_list=args.corr_radius_list,

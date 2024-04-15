@@ -11,7 +11,7 @@ from .attention import SelfAttnPropagation
 from .geometry import flow_warp, compute_flow_with_depth_pose
 from .reg_refine import BasicUpdateBlock
 from .utils import normalize_img, feature_add_position, upsample_flow_with_mask
-
+from .vim import VisionMamba
 
 class UniMatch(nn.Module):
     def __init__(self,
@@ -182,6 +182,12 @@ class UniMatch(nn.Module):
                                                   attn_type=attn_type,
                                                   attn_num_splits=attn_splits,
                                                   )
+            # # With these lines
+            # print(feature0.shape)
+            # print(feature1.shape)
+            # input()
+            # feature0 = self.transformer(feature0)
+            # feature1 = self.transformer(feature1)
 
             # correlation and softmax
             if task == 'depth':

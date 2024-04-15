@@ -12,7 +12,7 @@ from glob import glob
 
 from loss.stereo_metric import d1_metric, thres_metric
 from dataloader.stereo.datasets import (FlyingThings3D, KITTI15,
-                                        ETH3DStereo, MiddleburyEval3)
+                                        ETH3DStereo, MiddleburyEval3,SintelStereo)
 from dataloader.stereo import transforms
 from utils.utils import InputPadder
 
@@ -297,7 +297,98 @@ def create_middlebury_submission(model,
             with open(save_runtime_name, 'w') as f:
                 f.write(str(inference_time))
 
+@torch.no_grad()
+def validate_sintel(model,
+                    max_disp=400,
+                    padding_factor=16,
+                    inference_size=None,
+                    attn_type=None,
+                    num_iters_per_scale=None,
+                    attn_splits_list=None,
+                    corr_radius_list=None,
+                    prop_radius_list=None,
+                    num_reg_refine=1,
+                    ):
+    model.eval()
+    results = {}
 
+    val_transform_list = [transforms.ToTensor(),
+                          transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+                          ]
+
+    val_transform = transforms.Compose(val_transform_list)
+
+    val_dataset = SintelStereo(transform=val_transform)
+
+    num_samples = len(val_dataset)
+    print('=> %d samples found in the validation set' % num_samples)
+
+    val_epe = 0
+    val_d1 = 0
+
+    valid_samples = 0
+
+    for i, sample in enumerate(val_dataset):
+        if i % 1000 == 0:
+            print('=> Validating %d/%d' % (i, num_samples))
+
+        left = sample['left'].to(device).unsqueeze(0)  # [1, 3, H, W]
+        right = sample['right'].to(device).unsqueeze(0)  # [1, 3, H, W]
+        gt_disp = sample['disp'].to(device)  # [H, W]
+
+        if inference_size is None:
+            padder = InputPadder(left.shape, padding_factor=padding_factor)
+            left, right = padder.pad(left, right)
+        else:
+            ori_size = left.shape[-2:]
+            left = F.interpolate(left, size=inference_size, mode='bilinear',
+                                 align_corners=True)
+            right = F.interpolate(right, size=inference_size, mode='bilinear',
+                                  align_corners=True)
+
+        mask = (gt_disp > 0) & (gt_disp < max_disp)
+
+        if not mask.any():
+            continue
+
+        valid_samples += 1
+
+        with torch.no_grad():
+            pred_disp = model(left, right,
+                              attn_type=attn_type,
+                              num_iters_per_scale=num_iters_per_scale,
+                              attn_splits_list=attn_splits_list,
+                              corr_radius_list=corr_radius_list,
+                              prop_radius_list=prop_radius_list,
+                              num_reg_refine=num_reg_refine,
+                              task='stereo',
+                              )['flow_preds'][-1]  # [1, H, W]
+
+        # remove padding
+        if inference_size is None:
+            pred_disp = padder.unpad(pred_disp)[0]  # [H, W]
+        else:
+            # resize back
+            pred_disp = F.interpolate(pred_disp.unsqueeze(1), size=ori_size, mode='bilinear',
+                                      align_corners=True).squeeze(1)[0]  # [H, W]
+            pred_disp = pred_disp * ori_size[-1] / float(inference_size[-1])
+
+        epe = F.l1_loss(gt_disp[mask], pred_disp[mask], reduction='mean')
+        d1 = d1_metric(pred_disp, gt_disp, mask)
+
+        val_epe += epe.item()
+        val_d1 += d1.item()
+
+    mean_epe = val_epe / valid_samples
+    mean_d1 = val_d1 / valid_samples
+
+    print('Validation things EPE: %.3f, D1: %.4f' % (
+        mean_epe, mean_d1))
+
+    results['things_epe'] = mean_epe
+    results['things_d1'] = mean_d1
+
+    return results
 @torch.no_grad()
 def validate_things(model,
                     max_disp=400,
@@ -415,7 +506,7 @@ def validate_kitti15(model,
 
     val_dataset = KITTI15(transform=val_transform,
                           )
-
+    input()
     num_samples = len(val_dataset)
     print('=> %d samples found in the validation set' % num_samples)
 
@@ -461,6 +552,7 @@ def validate_kitti15(model,
             torch.cuda.synchronize()
             time_start = time.perf_counter()
 
+        
         with torch.no_grad():
             pred_disp = model(left, right,
                               attn_type=attn_type,
@@ -470,7 +562,8 @@ def validate_kitti15(model,
                               num_reg_refine=num_reg_refine,
                               task='stereo',
                               )['flow_preds'][-1]  # [1, H, W]
-
+        
+        
         if count_time and i >= 5:
             torch.cuda.synchronize()
             total_time += time.perf_counter() - time_start
@@ -754,9 +847,10 @@ def inference_stereo(model,
     print('%d test samples found' % num_samples)
 
     fixed_inference_size = inference_size
-
+    times=[]
+    fps=[]
     for i in range(num_samples):
-
+        print(i)
         if (i + 1) % 50 == 0:
             print('predicting %d/%d' % (i + 1, num_samples))
 
@@ -795,7 +889,7 @@ def inference_stereo(model,
 
             if pred_right_disp:
                 left, right = hflip(right), hflip(left)
-
+            start=time.time()
             pred_disp = model(left, right,
                               attn_type=attn_type,
                               attn_splits_list=attn_splits_list,
@@ -804,7 +898,10 @@ def inference_stereo(model,
                               num_reg_refine=num_reg_refine,
                               task='stereo',
                               )['flow_preds'][-1]  # [1, H, W]
-
+            end=time.time()
+            
+            times.append(end-start)
+            fps.append(1/(end-start))
         if inference_size[0] != ori_size[0] or inference_size[1] != ori_size[1]:
             # resize back
             pred_disp = F.interpolate(pred_disp.unsqueeze(1), size=ori_size,
@@ -839,5 +936,8 @@ def inference_stereo(model,
 
             disp = vis_disparity(disp)
             cv2.imwrite(save_name, disp)
-
+    
+    dif=end-start
+    print('fps: ', fps)
+    print('times: ', times)
     print('Done!')
