@@ -506,7 +506,6 @@ def validate_kitti15(model,
 
     val_dataset = KITTI15(transform=val_transform,
                           )
-    input()
     num_samples = len(val_dataset)
     print('=> %d samples found in the validation set' % num_samples)
 

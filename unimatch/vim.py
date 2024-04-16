@@ -229,7 +229,7 @@ class VisionMamba(nn.Module):
                  patch_size=16, 
                  stride=16,
                  depth=24, 
-                 embed_dim=192, 
+                 embed_dim=128, 
                  channels=3, 
                  num_classes=1000,
                  ssm_cfg=None, 
@@ -279,9 +279,9 @@ class VisionMamba(nn.Module):
         self.num_classes = num_classes
         self.d_model = self.num_features = self.embed_dim = embed_dim  # num_features for consistency with other models
 
-        self.patch_embed = PatchEmbed(
-            img_size=img_size, patch_size=patch_size, stride=stride, in_chans=channels, embed_dim=embed_dim)
-        num_patches = self.patch_embed.num_patches
+        # self.patch_embed = PatchEmbed(
+        #     img_size=img_size, patch_size=patch_size, stride=stride, in_chans=channels, embed_dim=embed_dim)
+        num_patches = 48*96
 
         if if_cls_token:
             if use_double_cls_token:
@@ -342,7 +342,7 @@ class VisionMamba(nn.Module):
         # self.pre_logits = nn.Identity()
 
         # original init
-        self.patch_embed.apply(segm_init_weights)
+        # self.patch_embed.apply(segm_init_weights)
         self.head.apply(segm_init_weights)
         if if_abs_pos_embed:
             trunc_normal_(self.pos_embed, std=.02)
@@ -380,9 +380,8 @@ class VisionMamba(nn.Module):
     def forward_features(self, x, inference_params=None, if_random_cls_token_position=False, if_random_token_rank=False):
         # taken from https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
         # with slight modifications to add the dist_token
-        x = self.patch_embed(x)
+        # x = self.patch_embed(x)
         B, M, _ = x.shape
-
         if self.if_cls_token:
             if self.use_double_cls_token:
                 cls_token_head = self.cls_token_head.expand(B, -1, -1)
@@ -478,6 +477,7 @@ class VisionMamba(nn.Module):
                 hidden_states, residual = layer(
                     hidden_states, residual, inference_params=inference_params
                 )
+                
         else:
             # get two layers in a single for-loop
             for i in range(len(self.layers) // 2):
@@ -525,25 +525,25 @@ class VisionMamba(nn.Module):
                     return hidden_states[:, token_position, :]
                 else:
                     return hidden_states[:, token_position, :]
-
-        if self.final_pool_type == 'none':
-            return hidden_states[:, -1, :]
-        elif self.final_pool_type == 'mean':
-            return hidden_states.mean(dim=1)
-        elif self.final_pool_type == 'max':
-            return hidden_states
-        elif self.final_pool_type == 'all':
-            return hidden_states
-        else:
-            raise NotImplementedError
+        return hidden_states
+        # if self.final_pool_type == 'none':
+        #     return hidden_states[:, -1, :]
+        # elif self.final_pool_type == 'mean':
+        #     return hidden_states.mean(dim=1)
+        # elif self.final_pool_type == 'max':
+        #     return hidden_states
+        # elif self.final_pool_type == 'all':
+        #     return hidden_states
+        # else:
+        #     raise NotImplementedError
 
     def forward(self, x, return_features=False, inference_params=None, if_random_cls_token_position=False, if_random_token_rank=False):
         x = self.forward_features(x, inference_params, if_random_cls_token_position=if_random_cls_token_position, if_random_token_rank=if_random_token_rank)
-        if return_features:
-            return x
-        x = self.head(x)
-        if self.final_pool_type == 'max':
-            x = x.max(dim=1)[0]
+        # if return_features:
+        #     return x
+        # x = self.head(x)
+        # if self.final_pool_type == 'max':
+        #     x = x.max(dim=1)[0]
         return x
 
 

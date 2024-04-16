@@ -209,20 +209,17 @@ class FeatureTransformer(nn.Module):
                  ):
         super(FeatureTransformer, self).__init__()
 
-        self.d_model = d_model
-        self.nhead = nhead
+        # self.d_model = d_model
+        # self.nhead = nhead
 
-        self.vision_mamba = VisionMamba(
-            embed_dim = d_model,
-            depth = num_layers,
-        )
-        self.layers = nn.ModuleList([
-            TransformerBlock(d_model=d_model,
-                             nhead=nhead,
-                             ffn_dim_expansion=ffn_dim_expansion,
-                             )
-            for i in range(num_layers)])
+        # self.layers = nn.ModuleList([
+        #     TransformerBlock(d_model=d_model,
+        #                      nhead=nhead,
+        #                      ffn_dim_expansion=ffn_dim_expansion,
+        #                      )
+        #     for i in range(num_layers)])
 
+        self.vision_mamba = VisionMamba(self)
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
@@ -234,65 +231,72 @@ class FeatureTransformer(nn.Module):
                 ):
 
         b, c, h, w = feature0.shape
-        assert self.d_model == c
+        # assert self.d_model == c
 
         feature0 = feature0.flatten(-2).permute(0, 2, 1)  # [B, H*W, C]
         feature1 = feature1.flatten(-2).permute(0, 2, 1)  # [B, H*W, C]
+        # feature shape is now B, H*W, C or B, N, C
 
-        # 2d attention
-        if 'swin' in attn_type and attn_num_splits > 1:
-            # global and refine use different number of splits
-            window_size_h = h // attn_num_splits
-            window_size_w = w // attn_num_splits
+        # # 2d attention
+        # if 'swin' in attn_type and attn_num_splits > 1:
+        #     # global and refine use different number of splits
+        #     window_size_h = h // attn_num_splits
+        #     window_size_w = w // attn_num_splits
 
-            # compute attn mask once
-            shifted_window_attn_mask = generate_shift_window_attn_mask(
-                input_resolution=(h, w),
-                window_size_h=window_size_h,
-                window_size_w=window_size_w,
-                shift_size_h=window_size_h // 2,
-                shift_size_w=window_size_w // 2,
-                device=feature0.device,
-            )  # [K*K, H/K*W/K, H/K*W/K]
-        else:
-            shifted_window_attn_mask = None
+        #     # compute attn mask once
+        #     shifted_window_attn_mask = generate_shift_window_attn_mask(
+        #         input_resolution=(h, w),
+        #         window_size_h=window_size_h,
+        #         window_size_w=window_size_w,
+        #         shift_size_h=window_size_h // 2,
+        #         shift_size_w=window_size_w // 2,
+        #         device=feature0.device,
+        #     )  # [K*K, H/K*W/K, H/K*W/K]
+        # else:
+        #     shifted_window_attn_mask = None
 
-        # 1d attention
-        if 'swin1d' in attn_type and attn_num_splits > 1:
-            window_size_w = w // attn_num_splits
+        # # 1d attention
+        # if 'swin1d' in attn_type and attn_num_splits > 1:
+        #     window_size_w = w // attn_num_splits
 
-            # compute attn mask once
-            shifted_window_attn_mask_1d = generate_shift_window_attn_mask_1d(
-                input_w=w,
-                window_size_w=window_size_w,
-                shift_size_w=window_size_w // 2,
-                device=feature0.device,
-            )  # [K, W/K, W/K]
-        else:
-            shifted_window_attn_mask_1d = None
+        #     # compute attn mask once
+        #     shifted_window_attn_mask_1d = generate_shift_window_attn_mask_1d(
+        #         input_w=w,
+        #         window_size_w=window_size_w,
+        #         shift_size_w=window_size_w // 2,
+        #         device=feature0.device,
+        #     )  # [K, W/K, W/K]
+        # else:
+        #     shifted_window_attn_mask_1d = None
 
         # concat feature0 and feature1 in batch dimension to compute in parallel
         concat0 = torch.cat((feature0, feature1), dim=0)  # [2B, H*W, C]
         concat1 = torch.cat((feature1, feature0), dim=0)  # [2B, H*W, C]
 
-        for i, layer in enumerate(self.layers):
-            concat0 = layer(concat0, concat1,
-                            height=h,
-                            width=w,
-                            attn_type=attn_type,
-                            with_shift='swin' in attn_type and attn_num_splits > 1 and i % 2 == 1,
-                            attn_num_splits=attn_num_splits,
-                            shifted_window_attn_mask=shifted_window_attn_mask,
-                            shifted_window_attn_mask_1d=shifted_window_attn_mask_1d,
-                            )
+        # Process concatenated features through Vision Mamba
+        processed_concat0 = self.vision_mamba(concat0)
+        processed_concat1 = self.vision_mamba(concat1)
+        # for i, layer in enumerate(self.layers):
+        #     concat0 = layer(concat0, concat1,
+        #                     height=h,
+        #                     width=w,
+        #                     attn_type=attn_type,
+        #                     with_shift='swin' in attn_type and attn_num_splits > 1 and i % 2 == 1,
+        #                     attn_num_splits=attn_num_splits,
+        #                     shifted_window_attn_mask=shifted_window_attn_mask,
+        #                     shifted_window_attn_mask_1d=shifted_window_attn_mask_1d,
+        #                     )
 
-            # update feature1
-            concat1 = torch.cat(concat0.chunk(chunks=2, dim=0)[::-1], dim=0)
+        #     # update feature1
+        #     concat1 = torch.cat(concat0.chunk(chunks=2, dim=0)[::-1], dim=0)
 
-        feature0, feature1 = concat0.chunk(chunks=2, dim=0)  # [B, H*W, C]
+        # feature0, feature1 = concat0.chunk(chunks=2, dim=0)  # [B, H*W, C]
+        processed_feature0, processed_feature1 = processed_concat0.chunk(2, dim=0)
+        processed_feature1, _ = processed_concat1.chunk(2, dim=0)
 
         # reshape back
-        feature0 = feature0.view(b, h, w, c).permute(0, 3, 1, 2).contiguous()  # [B, C, H, W]
-        feature1 = feature1.view(b, h, w, c).permute(0, 3, 1, 2).contiguous()  # [B, C, H, W]
-
-        return feature0, feature1
+        processed_feature0 = processed_feature0.view(b, h, w, c).permute(0, 3, 1, 2).contiguous()  # [B, C, H, W]
+        processed_feature1 = processed_feature1.view(b, h, w, c).permute(0, 3, 1, 2).contiguous()  # [B, C, H, W]
+        # processed_feature0 = processed_feature0.view(b, c, h, w).permute(0, 2, 3, 1).contiguous()
+        # processed_feature1 = processed_feature1.view(b, c, h, w).permute(0, 2, 3, 1).contiguous()
+        return processed_feature0, processed_feature1

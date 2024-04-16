@@ -40,13 +40,13 @@
 
 # sceneflow
 # resume flow things model
-CHECKPOINT_DIR=checkpoints_stereo/sceneflow-gmstereo-scale2-resumeflowthings && \
+CHECKPOINT_DIR=./VisionMambaKittiPretrain && \
 mkdir -p ${CHECKPOINT_DIR} && \
 python main_stereo.py \
 --checkpoint_dir ${CHECKPOINT_DIR} \
 --no_resume_optimizer \
 --stage kitti15mix \
---batch_size 1 \
+--batch_size 16 \
 --val_dataset kitti15 \
 --img_height 384 \
 --img_width 768 \

@@ -125,7 +125,6 @@ class UniMatch(nn.Module):
 
         # list of features, resolution low to high
         feature0_list, feature1_list = self.extract_feature(img0, img1)  # list of features
-
         flow = None
 
         if task != 'depth':
@@ -175,20 +174,21 @@ class UniMatch(nn.Module):
             prop_radius = prop_radius_list[scale_idx]
 
             # add position to features
-            feature0, feature1 = feature_add_position(feature0, feature1, attn_splits, self.feature_channels)
+            # feature0, feature1 = feature_add_position(feature0, feature1, attn_splits, self.feature_channels)
 
+            # print("before transformer", feature0.shape, feature1.shape)
+            # input()
+            # print(attn_splits)
+            # print(type(attn_splits))
+            # input()
             # Transformer
             feature0, feature1 = self.transformer(feature0, feature1,
                                                   attn_type=attn_type,
                                                   attn_num_splits=attn_splits,
                                                   )
             # # With these lines
-            # print(feature0.shape)
-            # print(feature1.shape)
+            # print("after transformer", feature0.shape) # [1, 128, 48, 96] => [B, C, H, W ] ; H from 384/8 and W from 768/8
             # input()
-            # feature0 = self.transformer(feature0)
-            # feature1 = self.transformer(feature1)
-
             # correlation and softmax
             if task == 'depth':
                 # first generate depth candidates
@@ -226,7 +226,6 @@ class UniMatch(nn.Module):
 
             if task == 'stereo':
                 flow = flow.clamp(min=0)  # positive disparity
-
             # upsample to the original resolution for supervison at training time only
             if self.training:
                 flow_bilinear = self.upsample_flow(flow, None, bilinear=True, upsample_factor=upsample_factor,
