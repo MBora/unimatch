@@ -219,7 +219,9 @@ class FeatureTransformer(nn.Module):
         #                      )
         #     for i in range(num_layers)])
 
-        self.vision_mamba = VisionMamba(self)
+        self.vision_mamba = VisionMamba(patch_size=16, embed_dim=128, depth=6, rms_norm=False, residual_in_fp32=False, fused_add_norm=False, final_pool_type='mean', if_abs_pos_embed=False, if_rope=False, if_rope_residual=False, bimamba_type="v2", if_cls_token=False, if_devide_out=False, use_middle_cls_token=False)
+        # self.vision_mamba.load_state_dict(torch.load('/home/beta/Workbenches/saurabh/unimatch/Vim-tiny-midclstok/vim_t_midclstok_76p1acc.pth')['model'], strict=False)
+        
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)

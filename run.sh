@@ -40,28 +40,28 @@
 
 # sceneflow
 # resume flow things model
-CHECKPOINT_DIR=./VisionMambaKittiPretrain && \
+CHECKPOINT_DIR=./VisionMambaKittiPretrainLoadv2 && \
 mkdir -p ${CHECKPOINT_DIR} && \
 python main_stereo.py \
 --checkpoint_dir ${CHECKPOINT_DIR} \
 --no_resume_optimizer \
 --stage kitti15mix \
---batch_size 16 \
+--batch_size 4 \
+--num_workers 8 \
+--lr 5e-5 \
+--feature_channels 128 \
 --val_dataset kitti15 \
---img_height 384 \
---img_width 768 \
+--img_height 352 \
+--img_width 1216 \
 --padding_factor 32 \
---upsample_factor 4 \
---num_scales 2 \
+--upsample_factor 8 \
+--num_scales 1 \
 --attn_type self_swin2d_cross_swin1d \
---attn_splits_list 2 8 \
---corr_radius_list -1 4 \
---prop_radius_list -1 1 \
---summary_freq 100 \
---val_freq 100 \
---save_ckpt_freq 100 \
---save_latest_ckpt_freq 100 \
---num_steps 100 \
+--summary_freq 1000 \
+--val_freq 1000 \
+--save_ckpt_freq 1000 \
+--save_latest_ckpt_freq 1000 \
+--num_steps 100000 \
 2>&1 | tee -a ${CHECKPOINT_DIR}/train.log
 
 

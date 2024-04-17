@@ -174,7 +174,7 @@ class UniMatch(nn.Module):
             prop_radius = prop_radius_list[scale_idx]
 
             # add position to features
-            # feature0, feature1 = feature_add_position(feature0, feature1, attn_splits, self.feature_channels)
+            feature0, feature1 = feature_add_position(feature0, feature1, attn_splits, self.feature_channels)
 
             # print("before transformer", feature0.shape, feature1.shape)
             # input()
@@ -188,6 +188,8 @@ class UniMatch(nn.Module):
                                                   )
             # # With these lines
             # print("after transformer", feature0.shape) # [1, 128, 48, 96] => [B, C, H, W ] ; H from 384/8 and W from 768/8
+            # print device
+            # print("device", feature0.device)
             # input()
             # correlation and softmax
             if task == 'depth':

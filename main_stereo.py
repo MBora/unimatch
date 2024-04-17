@@ -486,7 +486,11 @@ def main(args):
 
                 d1 = d1_metric(pred_disp, gt_disp, mask)
                 summary_writer.add_scalar('train/d1', d1.item(), total_steps)
-
+            
+            # log total steps to a csv every 10 steps
+            if total_steps % 10 == 0:
+                with open(os.path.join(args.checkpoint_dir, 'total_steps.csv'), 'a') as f:
+                    f.write(str(total_steps) + '\n')
             # always save the latest model for resuming training
             if args.local_rank == 0 and total_steps % args.save_latest_ckpt_freq == 0:
                 # Save lastest checkpoint after each epoch

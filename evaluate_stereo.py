@@ -506,6 +506,7 @@ def validate_kitti15(model,
 
     val_dataset = KITTI15(transform=val_transform,
                           )
+
     num_samples = len(val_dataset)
     print('=> %d samples found in the validation set' % num_samples)
 
@@ -848,7 +849,9 @@ def inference_stereo(model,
     fixed_inference_size = inference_size
     times=[]
     fps=[]
+    mem=[]
     for i in range(num_samples):
+        memory=torch.cuda.max_memory_allocated(device=None)
         print(i)
         if (i + 1) % 50 == 0:
             print('predicting %d/%d' % (i + 1, num_samples))
@@ -901,6 +904,7 @@ def inference_stereo(model,
             
             times.append(end-start)
             fps.append(1/(end-start))
+            mem.append(memory)
         if inference_size[0] != ori_size[0] or inference_size[1] != ori_size[1]:
             # resize back
             pred_disp = F.interpolate(pred_disp.unsqueeze(1), size=ori_size,
@@ -938,5 +942,7 @@ def inference_stereo(model,
     
     dif=end-start
     print('fps: ', fps)
+    print("mean fps: ", sum(fps)/len(fps))
     print('times: ', times)
+    print('mem: ', mem)
     print('Done!')
