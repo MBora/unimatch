@@ -92,7 +92,7 @@ class StereoDataset(Dataset):
 
 class FlyingThings3D(StereoDataset):
     def __init__(self,
-                 data_dir='datasets/FlyingThings3D',
+                    data_dir='/mnt/MIG_store/Datasets/flying-things-3d',
                  mode='TRAIN',
                  split='frames_finalpass',
                  transform=None,
@@ -115,7 +115,7 @@ class FlyingThings3D(StereoDataset):
 
 class Monkaa(StereoDataset):
     def __init__(self,
-                 data_dir='datasets/Monkaa',
+                 data_dir='/mnt/MIG_store/Datasets/monkaa',
                  split='frames_finalpass',
                  transform=None,
                  ):
@@ -136,7 +136,7 @@ class Monkaa(StereoDataset):
 
 class Driving(StereoDataset):
     def __init__(self,
-                 data_dir='datasets/Driving',
+                 data_dir='/mnt/MIG_store/Datasets/driving',
                  split='frames_finalpass',
                  transform=None,
                  ):
@@ -224,7 +224,7 @@ class KITTI12(StereoDataset):
 
 class VKITTI2(StereoDataset):
     def __init__(self,
-                 data_dir='datasets/VKITTI2',
+                 data_dir='/mnt/MIG_store/Datasets/vkitti2',
                  transform=None,
                  ):
         super(VKITTI2, self).__init__(transform=transform,

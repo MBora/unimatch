@@ -17,7 +17,7 @@ from evaluate_stereo import (validate_things, validate_kitti15, validate_eth3d,
                              validate_middlebury,validate_sintel, create_kitti_submission,
                              create_eth3d_submission,
                              create_middlebury_submission,
-                             inference_stereo,
+                             inference_stereo, validate_vkitti2
                              )
 from unimatch.unimatch import UniMatch
 
@@ -337,7 +337,22 @@ def main(args):
 
             if args.local_rank == 0:
                 val_results.update(results_dict)
+        
+        if 'vkitti2' in args.val_dataset:
+            results_dict = validate_vkitti2(model_without_ddp,
+                                            padding_factor=args.padding_factor,
+                                            inference_size=args.inference_size,
+                                            attn_type=args.attn_type,
+                                            attn_splits_list=args.attn_splits_list,
+                                            corr_radius_list=args.corr_radius_list,
+                                            prop_radius_list=args.prop_radius_list,
+                                            num_reg_refine=args.num_reg_refine,
+                                            count_time=args.count_time,
+                                            debug=args.debug,
+                                            )
 
+            if args.local_rank == 0:
+                val_results.update(results_dict)
         return
 
     if args.inference_dir or (args.inference_dir_left and args.inference_dir_right):
